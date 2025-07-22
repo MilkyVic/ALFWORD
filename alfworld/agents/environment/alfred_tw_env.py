@@ -255,7 +255,7 @@ class AlfredTWEnv(object):
         expert_type = self.config["env"]["expert_type"]
         training_method = self.config["general"]["training_method"]
 
-        if training_method == "dqn":
+        if training_method == "dqn" or training_method == "ppo":
             max_nb_steps_per_episode = self.config["rl"]["training"]["max_nb_steps_per_episode"]
         elif training_method == "dagger":
             max_nb_steps_per_episode = self.config["dagger"]["training"]["max_nb_steps_per_episode"]
@@ -270,7 +270,7 @@ class AlfredTWEnv(object):
 
         env_id = textworld.gym.register_games(self.game_files, request_infos,
                                               batch_size=batch_size,
-                                              asynchronous=True,
+                                              asynchronous=False,  # <-- tắt async
                                               max_episode_steps=max_nb_steps_per_episode,
                                               wrappers=wrappers)
         # Launch Gym environment.

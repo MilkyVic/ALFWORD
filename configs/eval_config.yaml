@@ -43,13 +43,13 @@ general:
   use_cuda: True                                            # disable this when running on machine without cuda
   visdom: False                                             # plot training/eval curves, run with visdom server
   task: 'alfred'
-  training_method: 'dagger'                                 # 'dqn' or 'dagger'
+  training_method: 'ppo'                                 # 'dqn' or 'dagger'
   save_path: '$ALFWORLD_DATA/agents/pretrained_checkpoints/'   # path to save pytorch models
   observation_pool_capacity: 3                              # k-size queue, 0 indicates no observation
   hide_init_receptacles: False                              # remove initial observation containing navigable receptacles
 
   training:
-    batch_size: 10
+    batch_size: 2
     max_episode: 50000
     smoothing_eps: 0.1
     optimizer:
@@ -58,7 +58,7 @@ general:
 
   evaluate:
     run_eval: True
-    batch_size: 3                                           # number of parallel eval threads
+    batch_size: 2                                     # number of parallel eval threads
     repeats: 1                                              # number of times to loop over eval games (we used 3 in paper experiments)
     controllers:                                            # different controllers to evaluate with
       - 'oracle'
@@ -111,7 +111,7 @@ rl:
     replay_memory_capacity: 500000                          # adjust this depending on your RAM size
     replay_memory_priority_fraction: 0.5
     update_per_k_game_steps: 5
-    replay_batch_size: 64
+    replay_batch_size: 32
     multi_step: 3
     replay_sample_history_length: 4
     replay_sample_update_from: 2
@@ -145,7 +145,7 @@ dagger:
   replay:
     replay_memory_capacity: 500000
     update_per_k_game_steps: 5
-    replay_batch_size: 64
+    replay_batch_size: 32
     replay_sample_history_length: 4
     replay_sample_update_from: 2
 

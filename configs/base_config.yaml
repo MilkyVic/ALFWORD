@@ -43,13 +43,13 @@ general:
   use_cuda: True                                               # disable this when running on machine without cuda
   visdom: False                                                # plot training/eval curves, run with visdom server
   task: 'alfred'
-  training_method: 'dagger'                                    # 'dqn' or 'dagger'
+  training_method: 'ppo'                                    # 'dqn' or 'dagger'
   save_path: './training/'                                     # path to save pytorch models
   observation_pool_capacity: 3                                 # k-size queue, 0 indicates no observation
   hide_init_receptacles: False                                 # remove initial observation containing navigable receptacles
 
   training:
-    batch_size: 10
+    batch_size: 2
     max_episode: 50000
     smoothing_eps: 0.1
     optimizer:
@@ -58,7 +58,7 @@ general:
 
   evaluate:
     run_eval: True
-    batch_size: 10
+    batch_size: 2
     env:
       type: "AlfredTWEnv"
 
@@ -99,7 +99,7 @@ rl:
     replay_memory_capacity: 500000                            # adjust this depending on your RAM size
     replay_memory_priority_fraction: 0.5
     update_per_k_game_steps: 5
-    replay_batch_size: 64
+    replay_batch_size: 32
     multi_step: 3
     replay_sample_history_length: 4
     replay_sample_update_from: 2
@@ -133,13 +133,13 @@ dagger:
   replay:
     replay_memory_capacity: 500000
     update_per_k_game_steps: 5
-    replay_batch_size: 64
+    replay_batch_size: 32
     replay_sample_history_length: 4
     replay_sample_update_from: 2
 
 vision_dagger:
   model_type: "resnet"                                        # 'resnet' (whole image features) or 'maskrcnn_whole' (whole image MaskRCNN feats) or 'maskrcnn' (top k MaskRCNN detection feats) or 'no_vision' (zero vision input)
-  resnet_fc_dim: 64
+  resnet_fc_dim: 32
   maskrcnn_top_k_boxes: 10                                    # top k box features
   use_exploration_frame_feats: False                          # append feats from initial exploration (memory intensive!)
   sequence_aggregation_method: "average"                      # 'sum' or 'average' or 'rnn'

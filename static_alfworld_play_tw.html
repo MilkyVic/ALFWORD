@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chơi Alfworld TextWorld</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 24px; }
+        h2 { text-align: center; }
+        #output { background: #222; color: #eee; min-height: 180px; padding: 12px; border-radius: 6px; margin-bottom: 16px; white-space: pre-line; }
+        #command { width: 80%; padding: 8px; font-size: 1em; }
+        #send, #reset, #start { padding: 8px 16px; font-size: 1em; margin-left: 4px; }
+        .actions { text-align: center; margin-top: 12px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Chơi Alfworld (TextWorld)</h2>
+    <div id="output">Nhấn "Bắt đầu" để khởi tạo môi trường mới.</div>
+    <div class="actions">
+        <input type="text" id="command" placeholder="Nhập lệnh (ví dụ: open fridge)..." disabled />
+        <button id="send" disabled>Gửi lệnh</button>
+        <button id="reset" disabled>Chơi lại</button>
+        <button id="start">Bắt đầu</button>
+    </div>
+</div>
+<script>
+const output = document.getElementById('output');
+const commandInput = document.getElementById('command');
+const sendBtn = document.getElementById('send');
+const resetBtn = document.getElementById('reset');
+const startBtn = document.getElementById('start');
+
+function appendOutput(text) {
+    output.textContent += '\n' + text;
+    output.scrollTop = output.scrollHeight;
+}
+
+function setUIPlaying(state) {
+    commandInput.disabled = !state;
+    sendBtn.disabled = !state;
+    resetBtn.disabled = !state;
+}
+
+startBtn.onclick = function() {
+    fetch('/start', {method: 'POST'})
+        .then(res => res.json())
+        .then(data => {
+            output.textContent = data.obs;
+            setUIPlaying(true);
+            commandInput.value = '';
+            commandInput.focus();
+        })
+        .catch(() => { output.textContent = 'Lỗi khi khởi tạo môi trường!'; });
+};
+
+sendBtn.onclick = function() {
+    const cmd = commandInput.value.trim();
+    if (!cmd) return;
+    appendOutput('> ' + cmd);
+    fetch('/step', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({cmd})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            appendOutput('Lỗi: ' + data.error);
+            setUIPlaying(false);
+        } else {
+            appendOutput(data.obs);
+            if (data.done) {
+                appendOutput('Kết thúc! Bạn đã hoàn thành hoặc thất bại.');
+                setUIPlaying(false);
+            }
+        }
+        commandInput.value = '';
+        commandInput.focus();
+    })
+    .catch(() => { appendOutput('Lỗi gửi lệnh!'); });
+};
+
+resetBtn.onclick = function() {
+    fetch('/reset', {method: 'POST'})
+        .then(res => res.json())
+        .then(data => {
+            output.textContent = data.obs;
+            setUIPlaying(true);
+            commandInput.value = '';
+            commandInput.focus();
+        })
+        .catch(() => { output.textContent = 'Lỗi khi reset môi trường!'; });
+};
+
+commandInput.addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') sendBtn.click();
+});
+</script>
+</body>
+</html> 

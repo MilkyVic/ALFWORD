@@ -227,6 +227,13 @@ class BaseAgent:
             self.action_space = self.config['rl']['action_space']
             self.max_nb_steps_per_episode = self.config['rl']['training']['max_nb_steps_per_episode']
             self.unstick_by_beam_search = None
+        elif self.training_method == "ppo":
+            self.max_target_length = self.config['rl']['max_target_length']
+            self.generate_top_k = self.config['rl']['generate_top_k']
+            self.beam_width = self.config['rl']['beam_width']
+            self.action_space = self.config['rl']['action_space']
+            self.max_nb_steps_per_episode = self.config['rl']['training']['max_nb_steps_per_episode']
+            self.unstick_by_beam_search = None
         else:
             raise NotImplementedError
 
@@ -286,7 +293,7 @@ class BaseAgent:
         self.observation_pool.reset(batch_size)
 
     def get_word_input(self, input_strings):
-        word_id_list = [self.tokenizer.encode(item, add_special_tokens=False) for item in input_strings]
+        word_id_list = [self.tokenizer.encode(item, add_special_tokens=False, max_length=512, truncation=True) for item in input_strings]
         return self.get_word_input_from_ids(word_id_list)
 
     def get_word_input_from_ids(self, word_id_list):

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Agent PPO tự động chơi Alfworld</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+        .container { max-width: 650px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 24px; }
+        h2 { text-align: center; }
+        #output { background: #222; color: #eee; min-height: 180px; padding: 12px; border-radius: 6px; margin-bottom: 16px; white-space: pre-line; }
+        label { display: block; margin-top: 10px; }
+        input[type=text] { width: 90%; padding: 8px; font-size: 1em; margin-bottom: 8px; }
+        button { padding: 8px 16px; font-size: 1em; margin-top: 8px; }
+        .actions { text-align: center; margin-top: 12px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Agent PPO tự động chơi Alfworld</h2>
+    <label for="checkpoint">Đường dẫn checkpoint (.pt):</label>
+    <input type="text" id="checkpoint" placeholder="Ví dụ: training/test_ep10000.pt" />
+    <label for="problem">Đường dẫn nhiệm vụ (có initial_state.pddl, traj_data.json):</label>
+    <input type="text" id="problem" placeholder="(Có thể bỏ trống để chọn ngẫu nhiên)" />
+    <div class="actions">
+        <button id="ppo_play">Agent PPO tự động chơi</button>
+    </div>
+    <div id="output">Nhấn "Agent PPO tự động chơi" để bắt đầu.</div>
+</div>
+<script>
+const output = document.getElementById('output');
+const checkpointInput = document.getElementById('checkpoint');
+const problemInput = document.getElementById('problem');
+const ppoBtn = document.getElementById('ppo_play');
+
+ppoBtn.onclick = function() {
+    const checkpoint = checkpointInput.value.trim();
+    const problem = problemInput.value.trim();
+    output.textContent = 'Đang chạy agent PPO...';
+    fetch('http://127.0.0.1:5001/ppo_play', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({checkpoint, problem})
+    })
+    .then(res => res.json())
+    .then(data => {
+        let log = '';
+        data.steps.forEach(step => {
+            log += `Bước ${step.step}:\n`;
+            log += `Lệnh agent chọn: ${step.action}\n`;
+            log += `Trạng thái: ${step.obs}\n\n`;
+        });
+        log += `---\nTổng số bước: ${data.total_steps}\nĐiểm số cuối cùng: ${data.final_score}`;
+        output.textContent = log;
+    })
+    .catch(() => { output.textContent = 'Lỗi khi gọi API hoặc agent PPO!'; });
+};
+</script>
+</body>
+</html> 
